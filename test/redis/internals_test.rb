@@ -189,6 +189,73 @@ class TestInternals < Minitest::Test
     end
   end
 
+  # JDH - ADDED
+  def test_retry_multi
+    # close_on_ping([0]) do |redis|
+    #   assert_equal "1", redis.ping
+    # end
+
+    ping = lambda do
+      idx = 1
+      rv = "+%d" % idx
+      rv
+    end
+
+    commands = {
+      multi: -> { "+OK\r\n" },
+      ping: ping,
+      exec: -> { :exit }
+    }
+
+    redis_mock(commands, { delay: 0.5 }) do |redis|
+      redis.multi do |multi|
+        multi.ping
+      end
+    end
+
+    # seq = [0, 1]
+    # @request = 0
+    # ping = lambda do
+    #   idx = @request
+    #   @request += 1
+    #   rv = "+%d" % idx
+    #   rv = nil if seq.include?(idx)
+    #   rv
+    # end
+
+
+
+    # redis_mock(commands) do |redis|
+    #   result = redis.multi do
+    #     redis.ping
+    #   end
+    #   assert_equal("PONG", result)
+    # end
+
+    # ping_future = nil
+
+
+
+    # close_on_ping([0, 1], delay: 0.5) do |redis|
+    #   redis.multi do |multi|
+    #     ping_future = redis.ping
+    #   end
+    #   assert_equal "1", ping_future.value
+    # end
+   
+
+    # ping_future = nil
+    # close_on_ping([0, 1]) do |redis|
+    #   redis.multi do |multi|
+    #     ping_future = redis.ping
+    #   end
+    # end
+    # assert_equal "1", ping_future.value
+
+  end
+
+  # JDH - END
+
   def test_retry_with_custom_reconnect_attempts
     close_on_ping([0, 1], reconnect_attempts: 2) do |redis|
       assert_equal "2", redis.ping
